@@ -12,3 +12,9 @@ docs/
 
 # Dotenv file
 .env
+
+
+
+
+echo "node_modules/
+broadcast/" > .gitignore
