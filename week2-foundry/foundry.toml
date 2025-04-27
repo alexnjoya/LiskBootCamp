@@ -4,4 +4,4 @@ out = "out"
 libs = ["lib"]
 
 [rpc_endpoints]
-linea_sepolia = "https://rpc.sepolia.linea.build"
+liskSepolia = "https://rpc.sepolia-api.lisk.com"

@@ -6,15 +6,15 @@ import {Counter} from "../src/Counter.sol";
 
 contract CounterScript is Script {
     Counter public counter;
-
+    
     function setUp() public {}
-
+    
     function run() public {
         vm.startBroadcast();
-
+        
         counter = new Counter();
         console.log("Counter deployed at:", address(counter));
-
+        
         vm.stopBroadcast();
     }
 }
