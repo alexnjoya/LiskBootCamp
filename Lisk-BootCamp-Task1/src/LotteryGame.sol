@@ -5,6 +5,12 @@ pragma solidity ^0.8.17;
  * @title LotteryGame
  * @dev A simple number guessing game where players can win ETH prizes
  */
+
+/**
+@title LottteryGame
+
+ */
+
 contract LotteryGame {
     struct Player {
         uint256 attempts;
