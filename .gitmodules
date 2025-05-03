@@ -1,0 +1,3 @@
+[submodule "week3-data-tructurues/lib/forge-std"]
+	path = week3-data-tructurues/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
