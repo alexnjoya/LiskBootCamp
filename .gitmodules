@@ -1,3 +1,6 @@
 [submodule "week3-voting-system/lib/forge-std"]
 	path = week3-voting-system/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "Week4-Lecture2/lib/forge-std"]
+	path = Week4-Lecture2/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
