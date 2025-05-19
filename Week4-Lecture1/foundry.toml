@@ -3,4 +3,9 @@ src = "src"
 out = "out"
 libs = ["lib"]
 
-# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+[rpc_endpoints]
+lisk_mainnet = "https://mainnet-service.lisk.com/rpc" # Replace with actual URL
+lisk_testnet = "https://testnet-service.lisk.com/rpc" # Replace with actual URL
+
+[etherscan]
+lisk = { key = "${ETHERSCAN_API_KEY}", url = "https://explorer-api.lisk.com/api" } # Update this too if needed
