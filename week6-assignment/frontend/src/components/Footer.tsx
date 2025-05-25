@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ART_NFT_ADDRESS, CREATOR_TOKEN_ADDRESS, LISK_EXPLORER_URL } from '../utils/constants';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  
   return (
     <footer className="bg-white border-t border-gray-100 py-8">
       <div className="container mx-auto px-4">
