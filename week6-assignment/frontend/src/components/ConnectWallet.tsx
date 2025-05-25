@@ -1,8 +1,6 @@
-import React from 'react';
 import { useWeb3 } from '../hooks/useWeb3';
 import { isLiskTestnet, switchToLiskTestnet } from '../services/web3Service';
 import { LISK_TESTNET_NAME } from '../utils/constants';
-
 
 interface ConnectWalletProps {
   message?: string;

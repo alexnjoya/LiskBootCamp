@@ -5,13 +5,13 @@ import { useWeb3 } from '../hooks/useWeb3';
 import { useNFTs } from '../hooks/useNFTs';
 import { usePinata } from '../hooks/usePinata';
 import { createNFTMetadata } from '../utils/helpers';
-import { NFT_ATTRIBUTES, MAX_FILE_SIZE, SUPPORTED_FILE_TYPES } from '../utils/constants';
+import { NFT_ATTRIBUTES, MAX_FILE_SIZE } from '../utils/constants';
 import type { FileWithPreview } from '../types/nft';
 
 const MintForm = () => {
   const { isConnected } = useWeb3();
   const { mintNFT } = useNFTs();
-  const { uploadFile, uploadMetadata, prepareFile, isUploading, uploadProgress, uploadError } = usePinata();
+  const { uploadFile, uploadMetadata, prepareFile, uploadProgress, uploadError } = usePinata();
   
   // Form state
   const [name, setName] = useState('');
