@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 // Lisk testnet chain ID
-export const LISK_TESTNET_CHAIN_ID = 578; // Replace with actual Lisk testnet chain ID
+export const LISK_TESTNET_CHAIN_ID = 4202;
 
 // Check if the connected network is Lisk testnet
 export const isLiskTestnet = (chainId: number): boolean => {
