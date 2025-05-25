@@ -1,6 +1,4 @@
 import { Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useWeb3 } from './hooks/useWeb3';
 
 // Pages
 import Home from './pages/Home';
@@ -13,24 +11,6 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 
 function App() {
-  const { connect, isConnected } = useWeb3();
-
-  // Try to connect wallet on load if previously connected
-  useEffect(() => {
-    const checkConnection = async () => {
-      if (localStorage.getItem('walletConnected') === 'true') {
-        try {
-          await connect();
-        } catch (error) {
-          console.error('Failed to reconnect wallet:', error);
-          localStorage.removeItem('walletConnected');
-        }
-      }
-    };
-
-    checkConnection();
-  }, [connect]);
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />

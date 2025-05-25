@@ -22,6 +22,7 @@ export interface Web3ContextType {
   disconnect: () => void;
   contracts: ContractInstances;
   tokenBalance: string;
+  setTokenBalance: (balance: string) => void;
   creatorRewardAmount: string;
   transactions: Record<string, TransactionStatus>;
   updateTransaction: (hash: string, status: TransactionStatus['status'], message?: string) => void;
@@ -44,77 +45,173 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [creatorRewardAmount, setCreatorRewardAmount] = useState('0');
   const [transactions, setTransactions] = useState<Record<string, TransactionStatus>>({});
 
-  // Initialize contracts
+  // Initialize provider and check connection
   useEffect(() => {
-    if (signer && isConnected) {
-      const creatorTokenAddress = import.meta.env.VITE_CREATOR_TOKEN_ADDRESS;
-      const artNFTAddress = import.meta.env.VITE_ART_NFT_ADDRESS;
+    const initializeProvider = async () => {
+      if (!window.ethereum) return;
 
-      if (!creatorTokenAddress || !artNFTAddress) {
-        console.error('Contract addresses not found in environment variables');
-        return;
-      }
-
-      const creatorToken = new ethers.Contract(creatorTokenAddress, (CreatorTokenABI as any).abi, signer);
-      const artNFT = new ethers.Contract(artNFTAddress, (ArtNFTABI as any).abi, signer);
-
-      setContracts({
-        creatorToken,
-        artNFT,
-      });
-    }
-  }, [signer, isConnected]);
-
-  // Fetch token balance and creator reward amount
-  useEffect(() => {
-    const fetchData = async () => {
-      if (isConnected && account && contracts.creatorToken && contracts.artNFT) {
-        try {
-          const balance = await contracts.creatorToken.balanceOf(account);
-          setTokenBalance(ethers.formatEther(balance));
-
-          const rewardAmount = await contracts.artNFT.creatorRewardAmount();
-          setCreatorRewardAmount(ethers.formatEther(rewardAmount));
-        } catch (error) {
-          console.error('Error fetching token data:', error);
-        }
-      }
-    };
-
-    fetchData();
-  }, [isConnected, account, contracts]);
-
-  const connect = async () => {
-    if (window.ethereum) {
       try {
-        setIsConnecting(true);
-        
-        // Create ethers provider
         const ethersProvider = new ethers.BrowserProvider(window.ethereum);
         setProvider(ethersProvider);
 
-        // Connect to the wallet
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const ethersSigner = await ethersProvider.getSigner();
-        const connectedChainId = await ethersProvider.getNetwork().then(network => Number(network.chainId));
-        
-        setSigner(ethersSigner);
-        setAccount(accounts[0]);
-        setChainId(connectedChainId);
-        setIsConnected(true);
-        localStorage.setItem('walletConnected', 'true');
-
-        // Setup event listeners
-        window.ethereum.on('accountsChanged', handleAccountsChanged);
-        window.ethereum.on('chainChanged', handleChainChanged);
-        window.ethereum.on('disconnect', handleDisconnect);
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          const ethersSigner = await ethersProvider.getSigner();
+          const connectedChainId = await ethersProvider.getNetwork().then(network => Number(network.chainId));
+          
+          setSigner(ethersSigner);
+          setAccount(accounts[0]);
+          setChainId(connectedChainId);
+          setIsConnected(true);
+        }
       } catch (error) {
-        console.error('Error connecting wallet:', error);
-      } finally {
-        setIsConnecting(false);
+        console.error('Error initializing provider:', error);
       }
-    } else {
+    };
+
+    initializeProvider();
+  }, []);
+
+  // Setup event listeners
+  useEffect(() => {
+    if (!window.ethereum) return;
+
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    window.ethereum.on('chainChanged', handleChainChanged);
+    window.ethereum.on('disconnect', handleDisconnect);
+
+    return () => {
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum.removeListener('chainChanged', handleChainChanged);
+      window.ethereum.removeListener('disconnect', handleDisconnect);
+    };
+  }, []);
+
+  // Initialize contracts
+  useEffect(() => {
+    if (!signer || !isConnected || !provider) return;
+
+    const initializeContracts = async () => {
+      try {
+        const creatorTokenAddress = import.meta.env.VITE_CREATOR_TOKEN_ADDRESS;
+        const artNFTAddress = import.meta.env.VITE_ART_NFT_ADDRESS;
+
+        if (!creatorTokenAddress || !artNFTAddress) {
+          console.error('Contract addresses not found in environment variables');
+          return;
+        }
+
+        // Check if contracts are deployed at the specified addresses
+        const [creatorTokenCode, artNFTCode] = await Promise.all([
+          provider.getCode(creatorTokenAddress),
+          provider.getCode(artNFTAddress)
+        ]);
+
+        if (!creatorTokenCode || creatorTokenCode === '0x') {
+          console.error('CreatorToken contract not deployed at the specified address');
+          return;
+        }
+
+        if (!artNFTCode || artNFTCode === '0x') {
+          console.error('ArtNFT contract not deployed at the specified address');
+          return;
+        }
+
+        const creatorToken = new ethers.Contract(creatorTokenAddress, (CreatorTokenABI as any).abi, signer);
+        const artNFT = new ethers.Contract(artNFTAddress, (ArtNFTABI as any).abi, signer);
+
+        // Verify contract interfaces
+        try {
+          await Promise.all([
+            creatorToken.balanceOf(ethers.ZeroAddress),
+            artNFT.creatorRewardAmount()
+          ]);
+        } catch (error) {
+          console.error('Error verifying contract interfaces:', error);
+          return;
+        }
+
+        setContracts({
+          creatorToken,
+          artNFT,
+        });
+      } catch (error) {
+        console.error('Error initializing contracts:', error);
+      }
+    };
+
+    initializeContracts();
+  }, [signer, isConnected, provider]);
+
+  // Fetch token data
+  useEffect(() => {
+    if (!isConnected || !account || !contracts.creatorToken || !contracts.artNFT || !provider) return;
+
+    const fetchTokenData = async () => {
+      try {
+        const creatorToken = contracts.creatorToken;
+        const artNFT = contracts.artNFT;
+
+        if (!creatorToken || !artNFT) return;
+
+        // Verify contracts are still valid
+        const [creatorTokenCode, artNFTCode] = await Promise.all([
+          provider.getCode(await creatorToken.getAddress()),
+          provider.getCode(await artNFT.getAddress())
+        ]);
+
+        if (!creatorTokenCode || creatorTokenCode === '0x' || !artNFTCode || artNFTCode === '0x') {
+          console.error('Contracts no longer valid at their addresses');
+          setTokenBalance('0');
+          setCreatorRewardAmount('0');
+          return;
+        }
+
+        const [balance, rewardAmount] = await Promise.all([
+          creatorToken.balanceOf(account),
+          artNFT.creatorRewardAmount()
+        ]);
+
+        setTokenBalance(ethers.formatEther(balance));
+        setCreatorRewardAmount(ethers.formatEther(rewardAmount));
+      } catch (error) {
+        console.error('Error fetching token data:', error);
+        setTokenBalance('0');
+        setCreatorRewardAmount('0');
+      }
+    };
+
+    fetchTokenData();
+  }, [isConnected, account, contracts.creatorToken, contracts.artNFT, provider]);
+
+  const connect = async () => {
+    if (!window.ethereum) {
       alert('Please install MetaMask or another Ethereum wallet extension');
+      return;
+    }
+
+    try {
+      setIsConnecting(true);
+      
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts.length === 0) {
+        throw new Error('No accounts found');
+      }
+
+      const ethersProvider = new ethers.BrowserProvider(window.ethereum);
+      const ethersSigner = await ethersProvider.getSigner();
+      const connectedChainId = await ethersProvider.getNetwork().then(network => Number(network.chainId));
+      
+      setProvider(ethersProvider);
+      setSigner(ethersSigner);
+      setAccount(accounts[0]);
+      setChainId(connectedChainId);
+      setIsConnected(true);
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+      setIsConnected(false);
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -124,14 +221,8 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     setAccount(null);
     setChainId(null);
     setIsConnected(false);
-    localStorage.removeItem('walletConnected');
-
-    // Remove event listeners
-    if (window.ethereum) {
-      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      window.ethereum.removeListener('chainChanged', handleChainChanged);
-      window.ethereum.removeListener('disconnect', handleDisconnect);
-    }
+    setTokenBalance('0');
+    setCreatorRewardAmount('0');
   };
 
   const handleAccountsChanged = (accounts: string[]) => {
@@ -145,8 +236,6 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const handleChainChanged = (chainIdHex: string) => {
     const newChainId = parseInt(chainIdHex, 16);
     setChainId(newChainId);
-    
-    // Refresh the page to ensure all contracts are updated
     window.location.reload();
   };
 
@@ -182,6 +271,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
         disconnect,
         contracts,
         tokenBalance,
+        setTokenBalance,
         creatorRewardAmount,
         transactions,
         updateTransaction,

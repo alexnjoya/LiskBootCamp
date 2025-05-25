@@ -6,8 +6,9 @@ solc = "0.8.20"
 evm_version = "paris"
 optimizer = true
 optimizer_runs = 200
-remappings = ["@openzeppelin/=lib/openzeppelin-contracts"]
-
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts"
+]
 
 [rpc_endpoints]
 lisk = "${LISK_RPC_URL}"

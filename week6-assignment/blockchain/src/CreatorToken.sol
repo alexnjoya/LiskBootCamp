@@ -21,7 +21,7 @@ contract CreatorToken is ERC20, Ownable {
         _;
     }
 
-    constructor() ERC20("CreatorToken", "CREATE") Ownable(msg.sender) {}
+    constructor() ERC20("CreatorToken", "CREATE") Ownable() {}
 
     /**
      * @dev Sets the ArtNFT contract address that is allowed to mint tokens

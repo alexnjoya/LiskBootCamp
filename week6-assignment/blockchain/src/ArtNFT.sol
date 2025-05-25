@@ -25,7 +25,7 @@ contract ArtNFT is ERC721URIStorage, Ownable {
     // Event emitted when a new NFT is minted
     event NFTMinted(uint256 indexed tokenId, address indexed creator, string tokenURI);
     
-    constructor(address _creatorTokenAddress) ERC721("ArtNFT", "ANFT") Ownable(msg.sender) {
+    constructor(address _creatorTokenAddress) ERC721("ArtNFT", "ANFT") Ownable() {
         require(_creatorTokenAddress != address(0), "ArtNFT: invalid token address");
         creatorToken = CreatorToken(_creatorTokenAddress);
     }
@@ -94,7 +94,7 @@ contract ArtNFT is ERC721URIStorage, Ownable {
      * @param _tokenId Token ID to query
      * @return True if the token exists
      */
-    function _exists(uint256 _tokenId) internal view returns (bool) {
+    function _exists(uint256 _tokenId) internal view override returns (bool) {
         return _ownerOf(_tokenId) != address(0);
     }
 }

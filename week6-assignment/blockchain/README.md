@@ -64,3 +64,8 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+== Logs ==
+  CreatorToken deployed at: 0x8E991Fa3dC37316Ea8080b278AD6f2195419CA3a
+  ArtNFT deployed at: 0x1bBac842D53C7c8660C0aFFc958B94F12104841C  
+  ArtNFT contract set in CreatorToken

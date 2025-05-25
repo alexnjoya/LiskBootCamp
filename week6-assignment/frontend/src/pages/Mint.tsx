@@ -14,10 +14,20 @@ const Mint = () => {
   
   // Refresh token balance when page loads
   useEffect(() => {
-    if (isConnected && isCorrectNetwork) {
-      refreshBalance();
-    }
-  }, [isConnected, isCorrectNetwork, refreshBalance]);
+    let mounted = true;
+    
+    const refreshBalanceIfNeeded = async () => {
+      if (isConnected && isCorrectNetwork && mounted) {
+        await refreshBalance();
+      }
+    };
+
+    refreshBalanceIfNeeded();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isConnected, isCorrectNetwork]);
   
   return (
     <div>

@@ -38,12 +38,14 @@ contract CreatorTokenTest is Test {
         assertEq(token.artNFTContract(), newArtNFTContract);
     }
 
-    function testFailSetArtNFTContractNonOwner() public {
+    function test_RevertWhen_NonOwnerSetsArtNFTContract() public {
         vm.prank(user1);
+        vm.expectRevert("Ownable: caller is not the owner");
         token.setArtNFTContract(address(0x123));
     }
 
-    function testFailSetArtNFTContractZeroAddress() public {
+    function test_RevertWhen_SetArtNFTContractZeroAddress() public {
+        vm.expectRevert("CreatorToken: invalid contract address");
         token.setArtNFTContract(address(0));
     }
 
@@ -59,13 +61,15 @@ contract CreatorTokenTest is Test {
         assertEq(token.totalMinted(), rewardAmount);
     }
 
-    function testFailRewardCreatorNonArtNFT() public {
+    function test_RevertWhen_NonArtNFTRewardsCreator() public {
         vm.prank(user1);
+        vm.expectRevert("CreatorToken: caller is not the ArtNFT contract");
         token.rewardCreator(user1, 100 * 10**18);
     }
 
-    function testFailRewardCreatorZeroAddress() public {
+    function test_RevertWhen_RewardCreatorZeroAddress() public {
         vm.prank(artNFTContract);
+        vm.expectRevert("CreatorToken: mint to zero address");
         token.rewardCreator(address(0), 100 * 10**18);
     }
 
