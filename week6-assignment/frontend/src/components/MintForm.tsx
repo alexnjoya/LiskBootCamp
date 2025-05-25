@@ -9,7 +9,7 @@ import { NFT_ATTRIBUTES, MAX_FILE_SIZE } from '../utils/constants';
 import type { FileWithPreview } from '../types/nft';
 
 const MintForm = () => {
-  const { isConnected } = useWeb3();
+  const { isConnected, contracts } = useWeb3();
   const { mintNFT } = useNFTs();
   const { uploadFile, uploadMetadata, prepareFile, uploadProgress, uploadError } = usePinata();
   
@@ -78,6 +78,11 @@ const MintForm = () => {
     
     if (!isConnected) {
       toast.error('Please connect your wallet first');
+      return;
+    }
+
+    if (!contracts.artNFT) {
+      toast.error('NFT contract not initialized. Please try reconnecting your wallet.');
       return;
     }
     

@@ -3,7 +3,7 @@ export const CREATOR_TOKEN_ADDRESS = import.meta.env.VITE_CREATOR_TOKEN_ADDRESS 
 export const ART_NFT_ADDRESS = import.meta.env.VITE_ART_NFT_ADDRESS || '';
 
 // Network
-export const LISK_TESTNET_RPC_URL = import.meta.env.VITE_LISK_RPC_URL || 'https://testnet-rpc.lisk.com';
+export const LISK_TESTNET_RPC_URL = import.meta.env.VITE_LISK_RPC_URL || 'https://testnet.lisk.com';
 export const LISK_TESTNET_CHAIN_ID = 4202; // Replace with actual Lisk testnet chain ID
 export const LISK_TESTNET_NAME = 'Lisk Testnet';
 export const LISK_EXPLORER_URL = 'https://testnet-explorer.lisk.com';

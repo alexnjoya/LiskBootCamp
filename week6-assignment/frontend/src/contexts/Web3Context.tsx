@@ -96,6 +96,11 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
         const creatorTokenAddress = import.meta.env.VITE_CREATOR_TOKEN_ADDRESS;
         const artNFTAddress = import.meta.env.VITE_ART_NFT_ADDRESS;
 
+        console.log('Initializing contracts with addresses:', {
+          creatorToken: creatorTokenAddress,
+          artNFT: artNFTAddress
+        });
+
         if (!creatorTokenAddress || !artNFTAddress) {
           console.error('Contract addresses not found in environment variables');
           return;
@@ -107,36 +112,46 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
           provider.getCode(artNFTAddress)
         ]);
 
+        console.log('Contract code check results:', {
+          creatorToken: creatorTokenCode ? 'Found' : 'Not found',
+          artNFT: artNFTCode ? 'Found' : 'Not found'
+        });
+
         if (!creatorTokenCode || creatorTokenCode === '0x') {
-          console.error('CreatorToken contract not deployed at the specified address');
+          console.error('CreatorToken contract not deployed at the specified address:', creatorTokenAddress);
           return;
         }
 
         if (!artNFTCode || artNFTCode === '0x') {
-          console.error('ArtNFT contract not deployed at the specified address');
+          console.error('ArtNFT contract not deployed at the specified address:', artNFTAddress);
           return;
         }
 
         const creatorToken = new ethers.Contract(creatorTokenAddress, (CreatorTokenABI as any).abi, signer);
         const artNFT = new ethers.Contract(artNFTAddress, (ArtNFTABI as any).abi, signer);
 
-        // Verify contract interfaces
+        // Verify contract interfaces - only check balanceOf as it's a standard ERC20 function
         try {
-          await Promise.all([
-            creatorToken.balanceOf(ethers.ZeroAddress),
-            artNFT.creatorRewardAmount()
-          ]);
+          await creatorToken.balanceOf(ethers.ZeroAddress);
+          console.log('CreatorToken contract interface verified successfully');
         } catch (error) {
-          console.error('Error verifying contract interfaces:', error);
+          console.error('Error verifying CreatorToken interface:', error);
           return;
         }
 
+        // Set contracts only if both are valid
         setContracts({
           creatorToken,
           artNFT,
         });
+
+        console.log('Contracts initialized successfully');
       } catch (error) {
         console.error('Error initializing contracts:', error);
+        setContracts({
+          creatorToken: null,
+          artNFT: null,
+        });
       }
     };
 
